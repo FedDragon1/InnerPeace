@@ -1,10 +1,298 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <title>Inner Peace</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300&display=swap");
+::-webkit-scrollbar {
+  width: 5px;
+  background: revert;
+}
+::-webkit-scrollbar-thumb {
+  background: #808080;
+  border-radius: 5px;
+}
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: 'Noto Sans', sans-serif;
+  background: #31323d;
+  color: #fff;
+}
+.container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-items: center;
+  height: 100vh;
+  width: 100vw;
+  gap: 20px;
+  justify-content: space-evenly;
+}
+#video {
+  width: 50%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+.caption {
+  height: 75vh;
+  width: 30vw;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-radius: 10px;
+  gap: 10px;
+  background: rgba(0,0,0,0.467);
+  border: #aaa 1px solid;
+  transition: all 0.2s ease-in-out;
+}
+.caption:hover {
+  border: #77e3ff 1px solid;
+}
+.headings {
+  height: 100px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 10px;
+  padding: 10px;
+  line-height: 2rem;
+}
+.content {
+  overflow-y: scroll;
+  flex-grow: 2000;
+  border-radius: 10px;
+  padding: 20px;
+  background: rgba(0,0,0,0.2);
+}
+.chat {
+  height: 150px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 10px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-end;
+  flex-wrap: nowrap;
+}
+.chat textarea {
+  width: calc(100% - 20px);
+  height: calc(70% - 5px);
+  resize: none;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-family: 'Noto Sans', sans-serif;
+  border: 1px #aaa solid;
+  background: transparent;
+  color: #fff;
+  transition: all 0.2s ease-in-out;
+}
+.chat textarea:focus {
+  outline: none;
+  border: #77e3ff 1px solid;
+}
+.chat button {
+  height: 30px;
+  width: 75px;
+  border-radius: 10px;
+  background: transparent;
+  transition: background 0.2s;
+  border: 1px #aaa solid;
+  color: #fff;
+}
+.chat button:hover {
+  background: #77e3ff;
+}
+#decoration {
+  background-image: linear-gradient(120deg, #d4fc79 0%, #96e6a1 100%);
+  position: fixed;
+  top: -10vw;
+  left: -20vw;
+  height: 40vw;
+  width: 40vw;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(50px);
+}
+#decoration:before {
+  content: '';
+  background-image: linear-gradient(120deg, #fccb90 0%, #d57eeb 100%);
+  height: 30vw;
+  width: 30vw;
+  position: fixed;
+  top: 0;
+  left: 30vw;
+  border-radius: 50%;
+  filter: blur(80px);
+}
+#decoration:after {
+  background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+  content: '';
+  height: 40vw;
+  width: 40vw;
+  top: 85vh;
+  left: 90vw;
+  border-radius: 50%;
+  display: block;
+  position: fixed;
+}
+.status {
+  display: flex;
+  justify-content: space-between;
+}
+.media {
+  display: flex;
+  gap: 10px;
+}
+.media-off {
+  color: #aaa;
+}
+.media-toggle {
+  transition: color 0.2s ease-in-out;
+}
+.media-toggle:hover {
+  color: #77e3ff;
+}
+
+.content .user {
+
+}
+
+.content .inner-peace {
+
+}
+
+.roll {
+    text-transform: capitalize;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
+<div class="container">
+    <video autoplay id="video"></video>
+    <div class="caption">
+        <div class="headings">
+            <b>Inner Peace AI</b>
+            <br>
+            <div class="status">
+                <span>Model Loading...</span>
+                <div class="media">
+                    <a id="microphone" class="media-toggle" onclick="media.toggleMicrophone()">M</a>
+                    <a id="camera" class="media-toggle" onclick="media.toggleCamera()">V</a>
+                </div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="user">
+                <span class="roll">You</span>
+                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Architecto asperiores autem debitis esse
+                harum impedit, maxime, nisi nobis quae quaerat quasi quia quis quisquam, reprehenderit sed soluta
+                voluptatum. Dolorem, placeat.</p>
+            </div>
+            <div class="inner-peace">
+                <span class="roll">Inner Peace</span>
+                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Architecto asperiores autem debitis esse
+                harum impedit, maxime, nisi nobis quae quaerat quasi quia quis quisquam, reprehenderit sed soluta
+                voluptatum. Dolorem, placeat.</p>
+            </div>
+        </div>
+        <div class="chat">
+            <textarea id="chat-data"></textarea>
+            <button type="button" onclick="chat.sendChat()">Send</button>
+        </div>
+    </div>
+</div>
+<div id="decoration">
+</div>
+<script defer id="media-js">
+    const media = {
+        cameraOn: true,
+        microphoneOn: true,
+        microphoneElement: document.getElementById("microphone"),
+        cameraElement: document.getElementById("camera"),
+        toggleCamera() {
+            this.cameraOn = !this.cameraOn;
+            if (this.cameraOn) {
+                this.cameraElement.classList.remove("media-off");
+            } else {
+                this.cameraElement.classList.add("media-off");
+            }
+        },
+        toggleMicrophone() {
+            this.microphoneOn = !this.microphoneOn;
+            if (this.microphoneOn) {
+                this.microphoneElement.classList.remove("media-off");
+            } else {
+                this.microphoneElement.classList.add("media-off");
+            }
+        }
+    }
 
+    const chat = {
+        history: document.querySelector(".content"),
+        textBox: document.querySelector("#chat-data"),
+        backend: 'http://127.0.0.1:5000/api/',  // flask backend localhost
+        requestFor(name) {
+            return `${this.backend}/${name}`
+        },
+        sendChat() {
+            if (media.microphoneOn || this.textBox.value.trim() === "") {
+                return;
+            }
+
+            this.createHistory("user", this.textBox.value)
+
+            axios.post(this.requestFor("chat"), { data: this.textBox.value })
+                .then(resp => {
+                    console.log(resp)
+                    this.createHistory("inner-peace", resp.data)
+                    setTimeout(() => {
+                        this.history.scroll(0, 5000);
+                    }, 10)
+                    this.textBox.value = "";
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+
+            setTimeout(() => {
+                this.history.scroll(0, 5000);
+            }, 10)
+
+        },
+        createHistory(roll, text) {
+            const entry = document.createElement("div");
+            entry.classList.add(roll)
+            const spanElement = document.createElement("span");
+            spanElement.innerText = (roll === "user" ? "You" : "Inner Peace");
+            spanElement.classList.add("roll");
+            const textElement = document.createElement("p");
+            textElement.innerText = text;
+
+            entry.append(spanElement, textElement);
+            this.history.append(entry)
+        }
+    }
+</script>
+<script defer id="stream-js">
+    document.addEventListener("DOMContentLoaded", () => {
+let video = document.querySelector("#video");
+
+navigator.mediaDevices.getUserMedia({ video: true })
+   .then(stream  => {
+       video.srcObject = stream;
+   }).catch(e => {
+       console.log(e)
+   })
+})
+
+</script>
 </body>
 </html>
