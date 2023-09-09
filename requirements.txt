@@ -1,7 +1,9 @@
 numpy
 tensorflow
-opencv-python
+opencv
 pillow
 matplotlib
 rich
 pandas
+keras
+jupyter
