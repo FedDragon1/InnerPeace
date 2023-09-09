@@ -7,3 +7,4 @@ rich
 pandas
 keras
 jupyter
+openai
