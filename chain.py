@@ -85,7 +85,7 @@ def get_chat_analysis(chat, emotion, history):
         facial_expression=emotion,
         history=process_history(history)
     )
-    p = openai.predict(p).split('\n')[-1]
+    p = openai.predict(p).split('\n')[-1].split("Output:")[-1]
     try:
         p = json.loads(p)["analyze"]
     except Exception:
