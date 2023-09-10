@@ -182,10 +182,10 @@ body {
             <b>Inner Peace AI</b>
             <br>
             <div class="status">
-                <span>Model Loading...</span>
+                <span id="model-status">Model Loading...</span>
                 <div class="media">
-                    <a id="microphone" class="media-toggle" onclick="media.toggleMicrophone()">M</a>
-                    <a id="camera" class="media-toggle" onclick="media.toggleCamera()">V</a>
+                    <a id="microphone" class="media-toggle" onclick="medias.toggleMicrophone()">M</a>
+                    <a id="camera" class="media-toggle" onclick="medias.toggleCamera()">V</a>
                 </div>
             </div>
         </div>
@@ -215,8 +215,116 @@ body {
 <div class="output">
   <img id="photo" alt="The screen capture will appear in this box." />
 </div>
+
+<div id='gUMArea'>
+      <div>
+      Record:
+        <input type="radio" name="media" value="video" checked id='mediaVideo'>Video
+        <input type="radio" name="media" value="audio">audio
+      </div>
+      <button class="btn btn-default"  id='gUMbtn'>Request Stream</button>
+    </div>
+    <div id='btns'>
+      <button  class="btn btn-default" id='start'>Start</button>
+      <button  class="btn btn-default" id='stop'>Stop</button>
+    </div>
+    <div>
+      <ul  class="list-unstyled" id='ul'></ul>
+    </div>
+    <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+
+<script>
+
+let log = console.log.bind(console),
+  id = val => document.getElementById(val),
+  ul = id('ul'),
+  gUMbtn = id('gUMbtn'),
+  start = id('start'),
+  stop = id('stop'),
+  stream_,
+  recorder,
+  counter=1,
+  chunks,
+  media;
+
+
+setTimeout( e => {
+    media = {
+          tag: 'audio',
+          type: 'audio/ogg',
+          ext: '.ogg',
+          gUM: {audio: true}
+        }
+  navigator.mediaDevices.getUserMedia(media.gUM)
+      .then(_stream => {
+            stream_ = _stream;
+            id('gUMArea').style.display = 'none';
+            id('btns').style.display = 'inherit';
+            start.removeAttribute('disabled');
+            recorder = new MediaRecorder(stream_);
+            recorder.ondataavailable = e => {
+              chunks.push(e.data);
+              if(recorder.state == 'inactive') {
+                  var reader = new FileReader();
+                    reader.readAsDataURL(makeBlob());
+                    reader.onloadend = function() {
+                      var base64data = reader.result;
+                      log(base64data)
+                    axios.post("http://127.0.0.1:5000/api/stt", {data: base64data}).then(resp => {
+                        chat.textBox.value += " " + resp.data;
+                    })
+
+}
+              }
+    };
+    log('got media successfully');
+  }).catch(log);
+}, 50   )
+
+startRecording = () => {
+  start.disabled = true;
+  stop.removeAttribute('disabled');
+  chunks=[];
+  recorder.start();
+}
+
+
+stopRecording = () => {
+  stop.disabled = true;
+  recorder.stop();
+  start.removeAttribute('disabled');
+}
+
+
+
+function makeLink(){
+  let blob = new Blob(chunks, {type: media.type })
+    , url = URL.createObjectURL(blob)
+    // , li = document.createElement('li')
+    // , mt = document.createElement(media.tag)
+    // , hf = document.createElement('a')
+  ;
+  // mt.controls = true;
+  // mt.src = url;
+  // hf.href = url;
+  // hf.download = `${counter++}${media.ext}`;
+  // hf.innerHTML = `donwload ${hf.download}`;
+  // li.appendChild(mt);
+  // li.appendChild(hf);
+  // ul.appendChild(li);
+    return url
+}
+
+function makeBlob() {
+    return new Blob(chunks, {type: media.type })
+}
+</script>
+
 <script defer id="media-js">
-    const media = {
+    const medias = {
         cameraOn: true,
         microphoneOn: true,
         microphoneElement: document.getElementById("microphone"),
@@ -240,9 +348,14 @@ body {
     }
 
     const chat = {
+        chatHistory: [{}, {}, {}, {}, {}, {}],
         history: document.querySelector(".content"),
         textBox: document.querySelector("#chat-data"),
         backend: 'http://127.0.0.1:5000/api/',  // flask backend localhost
+        processHistory() {
+            ret = this.chatHistory.slice(0, 4);
+            return ret.filter(Array.isArray)
+        },
         requestFor(name) {
             return `${this.backend}/${name}`
         },
@@ -253,7 +366,7 @@ body {
 
             this.createHistory("user", this.textBox.value)
 
-            axios.post(this.requestFor("chat"), { data: this.textBox.value })
+            axios.post(this.requestFor("chat"), { data: this.textBox.value, emotion: stream.status.innerText, history: this.processHistory() })
                 .then(resp => {
                     console.log(resp)
                     this.createHistory("inner-peace", resp.data)
@@ -275,26 +388,38 @@ body {
             const entry = document.createElement("div");
             entry.classList.add(roll)
             const spanElement = document.createElement("span");
-            spanElement.innerText = (roll === "user" ? "You" : "Inner Peace");
+            spanElement.innerText = (roll === "user" ? "Conversation" : "Inner Peace");
             spanElement.classList.add("roll");
             const textElement = document.createElement("p");
             textElement.innerText = text;
 
             entry.append(spanElement, textElement);
             this.history.append(entry)
+
+            this.chatHistory.shift()
+            this.chatHistory.push([roll, text])
+            console.log(this.chatHistory)
         }
     }
 </script>
 <script defer id="stream-js">
     const stream = {
+        status: document.querySelector("#model-status"),
         video: document.querySelector("#video"),
         canvas: document.querySelector("#canvas"),
         photo: document.querySelector("#photo"),
+        backend: 'http://127.0.0.1:5000/api/',
         aspectRatio: 1.333333,
         height: 48,
         interval: 500,
+        audioRecording: false,
+        recent_volumes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         requestFor(name) {
             return `${this.backend}/${name}`
+        },
+        averagePastVolume() {
+            const sum = this.recent_volumes.reduce((x, y) => x + y, 0);
+            return sum / 10;
         },
         takePicture() {
             const context = this.canvas.getContext("2d");
@@ -319,16 +444,57 @@ body {
             const base64 = this.takePicture();
             axios.post(this.requestFor("emotion"), { data: base64 })
                 .then(resp => {
-                    console.log(resp)
+                    this.status.innerText = resp["data"]
                 })
         }
     }
 
     document.addEventListener("DOMContentLoaded", () => {
 
-        navigator.mediaDevices.getUserMedia({ video: true })
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
            .then(str  => {
                stream.video.srcObject = str;
+
+               const audioContext = new AudioContext();
+               const analyser = audioContext.createAnalyser();
+               const microphone = audioContext.createMediaStreamSource(str);
+               const scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
+
+               analyser.smoothingTimeConstant = 0.8;
+               analyser.fftSize = 1024;
+
+               microphone.connect(analyser);
+               analyser.connect(scriptProcessor);
+               scriptProcessor.connect(audioContext.destination);
+               scriptProcessor.onaudioprocess = function() {
+                 const array = new Uint8Array(analyser.frequencyBinCount);
+                 analyser.getByteFrequencyData(array);
+                 const arraySum = array.reduce((a, value) => a + value, 0);
+                 const average = arraySum / array.length;
+                 console.log(Math.round(average));
+
+                 if (!stream.audioRecording && average > 20) {
+                    startRecording()
+                    stream.audioRecording = true;
+                } else if (average < 20 && stream.averagePastVolume() < 20 && stream.audioRecording) {
+                    stopRecording()
+                    // const formData = new FormData();
+                    // formData.append('audio-file', makeBlob(chunks));
+                    // axios({url: stream.requestFor("stt"), method: "post", data: formData})
+                    //     .then(resp => {
+                    //         log(resp)
+                    //     })
+                    //     .catch(e => {
+                    //         log(e)
+                    //     })
+                    stream.audioRecording = false;
+                }
+
+                stream.recent_volumes.shift()
+                stream.recent_volumes.push(average);
+               };
+
+
            }).catch(e => {
                console.log(e)
            })

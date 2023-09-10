@@ -1,15 +1,15 @@
-import numpy as np
-import tensorflow as tf
 import keras
+from pillow import PIL
+import numpy as np
 
-from PIL import Image
 
 model = keras.models.load_model("cnn")
 
-image = Image.open(r"D:\JetBrains\PycharmProjects\InnerPeace\emotion_dataset\train\angry\Training_3908.jpg")
+image = Image.open(r".\emotion_dataset\test\neutral\PrivateTest_687498.jpg")
 
 arr = np.array(image)[None, :].reshape(1, 48, 48, 1)
 
 pred = model.predict(arr)
 
 print(pred)
+

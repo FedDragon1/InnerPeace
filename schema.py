@@ -78,5 +78,5 @@ def test_database():
 
 if __name__ == '__main__':
     create_obj()
-    popularize_database()
-    test_database()
+    # popularize_database()
+    # test_database()
