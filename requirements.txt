@@ -1,11 +1,14 @@
 numpy
 tensorflow
-opencv
+opencv-python
 pillow
 matplotlib
-rich
 pandas
 keras
 jupyter
 openai
 flask
+weaviate-client
+python-dotenv
+tqdm
+flask-cors

@@ -16,7 +16,7 @@
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  /*overflow: hidden;*/
   font-family: 'Noto Sans', sans-serif;
   background: #31323d;
   color: #fff;
@@ -211,6 +211,10 @@ body {
 </div>
 <div id="decoration">
 </div>
+<canvas id="canvas"> </canvas>
+<div class="output">
+  <img id="photo" alt="The screen capture will appear in this box." />
+</div>
 <script defer id="media-js">
     const media = {
         cameraOn: true,
@@ -282,16 +286,57 @@ body {
     }
 </script>
 <script defer id="stream-js">
-    document.addEventListener("DOMContentLoaded", () => {
-let video = document.querySelector("#video");
+    const stream = {
+        video: document.querySelector("#video"),
+        canvas: document.querySelector("#canvas"),
+        photo: document.querySelector("#photo"),
+        aspectRatio: 1.333333,
+        height: 48,
+        interval: 500,
+        requestFor(name) {
+            return `${this.backend}/${name}`
+        },
+        takePicture() {
+            const context = this.canvas.getContext("2d");
+            this.canvas.height = this.height;
+            this.canvas.width = this.height * this.aspectRatio;
+            context.drawImage(this.video, 0, 0, this.canvas.offsetWidth, this.canvas.offsetHeight);
 
-navigator.mediaDevices.getUserMedia({ video: true })
-   .then(stream  => {
-       video.srcObject = stream;
-   }).catch(e => {
-       console.log(e)
-   })
-})
+            const data = this.canvas.toDataURL("image/jpg");
+            this.photo.setAttribute("src", data)
+
+            return data;
+        },
+        clearPhoto() {
+            const context = this.canvas.getContext("2d");
+            context.fillStyle = "#AAA";
+            context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+            const data = this.canvas.toDataURL("image/png");
+            this.photo.setAttribute("src", data)
+        },
+        emotionDetection() {
+            const base64 = this.takePicture();
+            axios.post(this.requestFor("emotion"), { data: base64 })
+                .then(resp => {
+                    console.log(resp)
+                })
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+           .then(str  => {
+               stream.video.srcObject = str;
+           }).catch(e => {
+               console.log(e)
+           })
+        setInterval(stream.emotionDetection.bind(stream), stream.interval);
+    })
+
+
+
 
 </script>
 </body>
