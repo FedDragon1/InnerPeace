@@ -16,7 +16,7 @@
 body {
   margin: 0;
   padding: 0;
-  /*overflow: hidden;*/
+  overflow: hidden;
   font-family: 'Noto Sans', sans-serif;
   background: #31323d;
   color: #fff;
@@ -441,6 +441,10 @@ function makeBlob() {
             this.photo.setAttribute("src", data)
         },
         emotionDetection() {
+            if (!medias.cameraOn) {
+                this.status.innerText = "Camera off"
+                return;
+            }
             const base64 = this.takePicture();
             axios.post(this.requestFor("emotion"), { data: base64 })
                 .then(resp => {
@@ -453,7 +457,9 @@ function makeBlob() {
 
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
            .then(str  => {
-               stream.video.srcObject = str;
+               if (medias.cameraOn) {
+                   stream.video.srcObject = str;
+               }
 
                const audioContext = new AudioContext();
                const analyser = audioContext.createAnalyser();
@@ -473,10 +479,10 @@ function makeBlob() {
                  const average = arraySum / array.length;
                  console.log(Math.round(average));
 
-                 if (!stream.audioRecording && average > 20) {
+                 if (!stream.audioRecording && average > 20 && medias.microphoneOn) {
                     startRecording()
                     stream.audioRecording = true;
-                } else if (average < 20 && stream.averagePastVolume() < 20 && stream.audioRecording) {
+                } else if (average < 20 && stream.averagePastVolume() < 20 && stream.audioRecording || !medias.microphoneOn) {
                     stopRecording()
                     // const formData = new FormData();
                     // formData.append('audio-file', makeBlob(chunks));
