@@ -51,6 +51,7 @@ def get_stt():
 
 @app.route('/api/emotion', methods=["POST"])
 def get_emotion():
+    ...
     base64_data = json.loads(request.data)["data"].split("base64,")[1]
     base64_decoded = base64.b64decode(base64_data)
     image = Image.open(io.BytesIO(base64_decoded))
@@ -69,4 +70,6 @@ def main():
 
 
 if __name__ == '__main__':
+    import schema
+    schema.create_obj()
     app.run()

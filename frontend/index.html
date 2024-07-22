@@ -190,18 +190,6 @@ body {
             </div>
         </div>
         <div class="content">
-            <div class="user">
-                <span class="roll">You</span>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Architecto asperiores autem debitis esse
-                harum impedit, maxime, nisi nobis quae quaerat quasi quia quis quisquam, reprehenderit sed soluta
-                voluptatum. Dolorem, placeat.</p>
-            </div>
-            <div class="inner-peace">
-                <span class="roll">Inner Peace</span>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Architecto asperiores autem debitis esse
-                harum impedit, maxime, nisi nobis quae quaerat quasi quia quis quisquam, reprehenderit sed soluta
-                voluptatum. Dolorem, placeat.</p>
-            </div>
         </div>
         <div class="chat">
             <textarea id="chat-data"></textarea>
@@ -391,6 +379,9 @@ function makeBlob() {
             spanElement.innerText = (roll === "user" ? "Conversation" : "Inner Peace");
             spanElement.classList.add("roll");
             const textElement = document.createElement("p");
+            if (typeof text === "object") {
+                text = text["analysis"]
+            }
             textElement.innerText = text;
 
             entry.append(spanElement, textElement);
